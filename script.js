@@ -13,26 +13,18 @@ const light = new THREE.DirectionalLight(0xffffff, 2);
 light.position.set(5, 10, 5);
 scene.add(light);
 
-// Load các cửa hàng
+// Load mô hình từ assets/shop.glb
 const loader = new GLTFLoader();
-
-const shops = [
-    { url: 'assets/shop1.glb', position: { x: -3, y: 0, z: 0 } },
-    { url: 'assets/shop2.glb', position: { x: 3, y: 0, z: 0 } }
-];
-
-shops.forEach(shopData => {
-    loader.load(shopData.url, (gltf) => {
-        const shop = gltf.scene;
-        shop.position.set(shopData.position.x, shopData.position.y, shopData.position.z);
-        scene.add(shop);
-    }, undefined, (error) => {
-        console.error('Lỗi load cửa hàng:', error);
-    });
+loader.load('assets/shop.glb', (gltf) => {
+    const shop = gltf.scene;
+    shop.position.set(0, 0, 0);
+    scene.add(shop);
+}, undefined, (error) => {
+    console.error('Lỗi load mô hình:', error);
 });
 
 // Đặt vị trí camera
-camera.position.set(0, 2, 10);
+camera.position.set(0, 2, 5);
 
 // Render loop
 function animate() {
@@ -40,3 +32,4 @@ function animate() {
     renderer.render(scene, camera);
 }
 animate();
+
