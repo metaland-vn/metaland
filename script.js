@@ -1,36 +1,87 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154/build/three.module.js';
+import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 
-// Khởi tạo Scene, Camera, Renderer
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+// Get the canvas
+const canvas = document.querySelector('canvas.webgl')
 
-// Thêm ánh sáng
-const light = new THREE.DirectionalLight(0xffffff, 2);
-light.position.set(5, 10, 5);
-scene.add(light);
+// Scene
+const scene = new THREE.Scene()
 
-// Load mô hình GLB
-const loader = new GLTFLoader();
-loader.load('assets/avatar.glb', (gltf) => {
-    const shop = gltf.scene;
-    shop.position.set(0, 0, 0);
-    shop.scale.set(1, 1, 1); // Điều chỉnh kích thước nếu cần
-    scene.add(shop);
-}, undefined, (error) => {
-    console.error('Lỗi load mô hình:', error);
-});
+// Camera
+const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000)
+camera.position.set(-5, 3, 5)
+camera.lookAt(new THREE.Vector3(0, 0, 0))
+scene.add(camera)
 
-// Đặt vị trí camera
-camera.position.set(0, 2, 5);
+// Load the glb model
+const loader = new GLTFLoader()
+let mixer
 
-// Render loop
+loader.load('./assets/avatar.glb', // updated glb model
+
+  function (gltf) {
+
+    const model = gltf.scene
+    const animations = gltf.animations
+
+    mixer = new THREE.AnimationMixer(model)
+    mixer.clipAction(animations[0]).play() // play the first animation
+
+    scene.add(model)
+  })
+
+// Add a grid helper
+const gridHelper = new THREE.GridHelper(10, 10)
+scene.add(gridHelper)
+
+// Add a light
+const light = new THREE.DirectionalLight(0xffffff, 1)
+light.position.set(-1, 3, 4)
+scene.add(light)
+
+// Create the Renderer
+const renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  antialias: true
+})
+
+renderer.setSize(window.innerWidth, window.innerHeight)
+renderer.outputEncoding = THREE.sRGBEncoding;
+
+// Add OrbitControls
+const controls = new OrbitControls(camera, canvas)
+controls.autoRotate = false
+
+// Initialize the main loop
+const clock = new THREE.Clock()
+let lastElapsedTime = 0
+
+// Animate Loop
 function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+  // Render the Scene
+  renderer.render(scene, camera)
+
+  // Update the controls
+  controls.update()
+
+  const elapsedTime = clock.getElapsedTime()
+  const deltaTime = elapsedTime - lastElapsedTime
+  lastElapsedTime = elapsedTime
+
+  // Mixer update
+  if (mixer != undefined) {
+    mixer.update(deltaTime)
+  }
+
+  // Call the animate function again on the next frame
+  requestAnimationFrame(animate)
 }
-animate();
+animate()
+
+// Add an event listener to the window resize
+window.addEventListener('resize', function () {
+  renderer.setSize(window.innerWidth, window.innerHeight)
+  camera.aspect = window.innerWidth / window.innerHeight
+  camera.updateProjectionMatrix()
+})
