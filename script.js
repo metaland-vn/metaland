@@ -1,5 +1,5 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154/build/three.module.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.154/examples/jsm/loaders/GLTFLoader.js';
+import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.154/examples/jsm/loaders/FBXLoader.js';
 
 // Khởi tạo Scene, Camera, Renderer
 const scene = new THREE.Scene();
@@ -13,12 +13,12 @@ const light = new THREE.DirectionalLight(0xffffff, 2);
 light.position.set(5, 10, 5);
 scene.add(light);
 
-// Load mô hình từ assets/shop.glb
-const loader = new GLTFLoader();
-loader.load('assets/shop.glb', (gltf) => {
-    const shop = gltf.scene;
-    shop.position.set(0, 0, 0);
-    scene.add(shop);
+// Load mô hình FBX từ thư mục assets/
+const loader = new FBXLoader();
+loader.load('assets/shop.fbx', (fbx) => {
+    fbx.scale.set(0.01, 0.01, 0.01); // Điều chỉnh kích thước nếu cần
+    fbx.position.set(0, 0, 0);
+    scene.add(fbx);
 }, undefined, (error) => {
     console.error('Lỗi load mô hình:', error);
 });
@@ -32,4 +32,3 @@ function animate() {
     renderer.render(scene, camera);
 }
 animate();
-
