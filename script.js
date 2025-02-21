@@ -1,5 +1,6 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154/build/three.module.js';
-import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.154/examples/jsm/loaders/FBXLoader.js';
+import * as THREE from 'three';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 // Khởi tạo Scene, Camera, Renderer
 const scene = new THREE.Scene();
@@ -13,12 +14,13 @@ const light = new THREE.DirectionalLight(0xffffff, 2);
 light.position.set(5, 10, 5);
 scene.add(light);
 
-// Load mô hình FBX từ thư mục assets/
-const loader = new FBXLoader();
-loader.load('assets/shop.fbx', (fbx) => {
-    fbx.scale.set(0.01, 0.01, 0.01); // Điều chỉnh kích thước nếu cần
-    fbx.position.set(0, 0, 0);
-    scene.add(fbx);
+// Load mô hình GLB
+const loader = new GLTFLoader();
+loader.load('assets/shop.glb', (gltf) => {
+    const shop = gltf.scene;
+    shop.position.set(0, 0, 0);
+    shop.scale.set(1, 1, 1); // Điều chỉnh kích thước nếu cần
+    scene.add(shop);
 }, undefined, (error) => {
     console.error('Lỗi load mô hình:', error);
 });
