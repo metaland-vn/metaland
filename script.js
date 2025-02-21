@@ -16,7 +16,7 @@ scene.add(light);
 
 // Load mô hình GLB
 const loader = new GLTFLoader();
-loader.load('assets/shop.glb', (gltf) => {
+loader.load('assets/avatar.glb', (gltf) => {
     const shop = gltf.scene;
     shop.position.set(0, 0, 0);
     shop.scale.set(1, 1, 1); // Điều chỉnh kích thước nếu cần
