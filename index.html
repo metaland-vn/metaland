@@ -57,7 +57,7 @@
             const light = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 10, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 2, 2, scene);
             light.intensity = 2;
 
-            BABYLON.SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "luxury_dress.glb", scene, function (meshes) {
+            BABYLON.SceneLoader.ImportMesh("", "https://metaland-vn.github.io/metaland/", "luxury_dress.glb", scene, function (meshes) {
                 let dress = meshes[0];
                 dress.position = new BABYLON.Vector3(0, 0, 0);
                 dress.actionManager = new BABYLON.ActionManager(scene);
