@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avatar & CLO-Set Viewer</title>
+    <title>Avatar & CLO-Set Embed</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
         #canvas-container { width: 100vw; height: 100vh; }
@@ -58,9 +58,8 @@
 
     <!-- Danh sách thiết kế -->
     <div id="design-list">
-        <div class="design-item" data-id="12345">Thiết kế 1</div>
-        <div class="design-item" data-id="67890">Thiết kế 2</div>
-        <div class="design-item" data-id="54321">Thiết kế 3</div>
+        <div class="design-item" data-id="182308771691441593a4d75ea7ce3371">Thiết kế 1</div>
+        <div class="design-item" data-id="another_design_id">Thiết kế 2</div>
     </div>
 
     <!-- Iframe hiển thị CLO-Set -->
@@ -74,7 +73,6 @@
     <script>
         let scene, camera, renderer, avatar, loader;
 
-        // Khởi tạo Three.js
         function init() {
             const container = document.getElementById("canvas-container");
 
@@ -87,13 +85,12 @@
             container.appendChild(renderer.domElement);
 
             loader = new THREE.GLTFLoader();
-            loadAvatar(); // Avatar giữ nguyên không đổi trang phục
+            loadAvatar();
 
             window.addEventListener("resize", onWindowResize);
             animate();
         }
 
-        // Tải avatar mặc định
         function loadAvatar() {
             loader.load("avatar.glb", (gltf) => {
                 avatar = gltf.scene;
@@ -101,7 +98,6 @@
             });
         }
 
-        // Xử lý sự kiện chọn thiết kế
         document.querySelectorAll(".design-item").forEach(item => {
             item.addEventListener("click", (event) => {
                 let designId = event.target.getAttribute("data-id");
@@ -109,36 +105,32 @@
             });
         });
 
-        // Hiển thị CLO-Set Viewer trong iframe
         function openCloFrame(designId) {
             let cloFrame = document.getElementById("clo-frame");
-            cloFrame.src = `https://style.clo-set.com/embed/182308771691441593a4d75ea7ce3371/1/c/0?colorway=0`;
+            cloFrame.src = `https://style.clo-set.com/embed/${designId}/1/c/0?colorway=0`;
             document.getElementById("clo-frame-container").style.display = "block";
         }
 
-        // Đóng CLO-Set Viewer
         function closeCloFrame() {
             document.getElementById("clo-frame-container").style.display = "none";
         }
 
-        // Cập nhật kích thước khi thay đổi cửa sổ
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        // Vòng lặp render
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
         }
 
-        // Khởi động
         init();
     </script>
 </body>
 </html>
+
 
 
 
