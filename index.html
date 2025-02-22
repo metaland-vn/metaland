@@ -61,10 +61,17 @@
                 let dress = meshes[0];
                 dress.position = new BABYLON.Vector3(0, 0, 0);
                 dress.actionManager = new BABYLON.ActionManager(scene);
+                
                 dress.actionManager.registerAction(
-                    new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                    new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, function () {
                         document.getElementById("popupFrame").src = "https://style.clo-set.com/embed/182308771691441593a4d75ea7ce3371/1/c/0?colorway=0";
                         document.getElementById("popup").style.display = "block";
+                    })
+                );
+                
+                dress.actionManager.registerAction(
+                    new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, function () {
+                        document.getElementById("popup").style.display = "none";
                     })
                 );
             });
@@ -75,6 +82,7 @@
     </script>
 </body>
 </html>
+
 
 
 
