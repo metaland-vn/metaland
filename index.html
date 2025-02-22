@@ -3,47 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Fashion Store</title>
+    <title>Luxury Fashion Store</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
-        canvas { width: 100vw; height: 100vh; display: block; }
+        canvas { width: 100%; height: 100vh; display: block; }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        .popup a { text-decoration: none; color: black; font-weight: bold; }
     </style>
 </head>
 <body>
     <canvas id="renderCanvas"></canvas>
+    <div id="popup" class="popup">
+        <p id="popupText"></p>
+        <a id="popupLink" href="#" target="_blank">View on CLO-SET</a>
+    </div>
     <script>
-        window.addEventListener('DOMContentLoaded', function () {
+        window.addEventListener("DOMContentLoaded", function () {
             const canvas = document.getElementById("renderCanvas");
             const engine = new BABYLON.Engine(canvas, true);
-            
-            const createScene = function () {
-                const scene = new BABYLON.Scene(engine);
-                const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 2, 5, BABYLON.Vector3.Zero(), scene);
-                camera.attachControl(canvas, true);
-                const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
-                
-                BABYLON.SceneLoader.ImportMesh("", "models/", "clothing.glb", scene, function (meshes) {
-                    meshes.forEach(mesh => {
-                        mesh.position = new BABYLON.Vector3(0, 0, 0);
-                    });
-                });
-                
-                return scene;
-            };
-            
-            const scene = createScene();
-            engine.runRenderLoop(function () {
-                scene.render();
+            const scene = new BABYLON.Scene(engine);
+
+            const camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 3, 10, BABYLON.Vector3.Zero(), scene);
+            camera.attachControl(canvas, true);
+
+            const light = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 10, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 2, 2, scene);
+            light.intensity = 2;
+
+            BABYLON.SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "luxury_dress.glb", scene, function (meshes) {
+                let dress = meshes[0];
+                dress.position = new BABYLON.Vector3(0, 0, 0);
+                dress.actionManager = new BABYLON.ActionManager(scene);
+                dress.actionManager.registerAction(
+                    new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                        document.getElementById("popupText").innerText = "Luxury Dress - Exclusive Collection";
+                        document.getElementById("popupLink").href = "https://clo-set.com/view?item=luxury_dress";
+                        document.getElementById("popup").style.display = "block";
+                    })
+                );
             });
-            
-            window.addEventListener("resize", function () {
-                engine.resize();
-            });
+
+            engine.runRenderLoop(() => scene.render());
+            window.addEventListener("resize", () => engine.resize());
         });
     </script>
 </body>
 </html>
+
 
 
