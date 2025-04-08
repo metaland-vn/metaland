@@ -1,142 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Thành phố nhỏ với mô hình GLB và bản đồ mini</title>
-  <script src="https://cdn.babylonjs.com/babylon.js"></script>
-  <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
-  <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; }
-    canvas { width: 100%; height: 100%; display: block; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Babylon.js Food Street</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <!-- Load Babylon.js from CDN -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
 </head>
 <body>
-<canvas id="renderCanvas"></canvas>
-<script>
-const canvas = document.getElementById("renderCanvas");
-const engine = new BABYLON.Engine(canvas, true);
-
-const createScene = () => {
-  const scene = new BABYLON.Scene(engine);
-
-  // Main camera
-  const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2.2, Math.PI / 3, 100, new BABYLON.Vector3(0, 0, 0), scene);
-  camera.attachControl(canvas, true);
-
-  // Light
-  const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
-
-  // Materials
-  const roadMat = new BABYLON.StandardMaterial("roadMat", scene);
-  roadMat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1);
-
-  const grassMat = new BABYLON.StandardMaterial("grassMat", scene);
-  grassMat.diffuseColor = new BABYLON.Color3(0.2, 0.6, 0.2);
-
-  const buildingMats = ["#C45", "#49C", "#FC6", "#6CF"].map(color => {
-    let mat = new BABYLON.StandardMaterial("mat", scene);
-    mat.diffuseColor = BABYLON.Color3.FromHexString(color);
-    return mat;
-  });
-
-  // Tạo block
-  function createBlock(x, z, type) {
-    if (type === "building") {
-      const h = Math.random() * 10 + 5;
-      const b = BABYLON.MeshBuilder.CreateBox("building", { width: 16, depth: 16, height: h }, scene);
-      b.position.set(x, h / 2, z);
-      b.material = buildingMats[Math.floor(Math.random() * buildingMats.length)];
-    } else if (type === "park") {
-      const ground = BABYLON.MeshBuilder.CreateGround("park", { width: 16, height: 16 }, scene);
-      ground.position.set(x, 0, z);
-      ground.material = grassMat;
-
-      for (let i = 0; i < 5; i++) {
-        const tx = x + Math.random() * 12 - 6;
-        const tz = z + Math.random() * 12 - 6;
-        const trunk = BABYLON.MeshBuilder.CreateCylinder("trunk", { height: 1, diameter: 0.5 }, scene);
-        trunk.position.set(tx, 0.5, tz);
-        const leaves = BABYLON.MeshBuilder.CreateSphere("leaves", { diameter: 2 }, scene);
-        leaves.position.set(tx, 2, tz);
-        let leafMat = new BABYLON.StandardMaterial("leafMat", scene);
-        leafMat.diffuseColor = new BABYLON.Color3(0.1, 0.6, 0.3);
-        leaves.material = leafMat;
-      }
-    }
-  }
-
-  // Tạo đường
-  function createRoad(x, z, width, depth) {
-    const road = BABYLON.MeshBuilder.CreateBox("road", { width: width, height: 0.1, depth: depth }, scene);
-    road.position.set(x, 0.05, z);
-    road.material = roadMat;
-  }
-
-  // Thành phố 3x3 block
-  const blockSize = 20;
-  const roadWidth = 6;
-  const total = 3;
-
-  for (let i = 0; i < total; i++) {
-    for (let j = 0; j < total; j++) {
-      const x = (i - 1) * (blockSize + roadWidth);
-      const z = (j - 1) * (blockSize + roadWidth);
-      const type = Math.random() > 0.3 ? "building" : "park";
-      createBlock(x, z, type);
-    }
-  }
-
-  // Đường ngang & dọc
-  for (let i = -1; i <= 1; i++) {
-    for (let j = -2; j <= 2; j++) {
-      createRoad(i * (blockSize + roadWidth), j * (blockSize / 2 + roadWidth), roadWidth, blockSize);
-      createRoad(j * (blockSize / 2 + roadWidth), i * (blockSize + roadWidth), blockSize, roadWidth);
-    }
-  }
-
-  // Tải mô hình GLB (ví dụ: nhà hàng)
-  BABYLON.SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "BoomBox.glb", scene, function (meshes) {
-    const model = meshes[0];
-    model.scaling = new BABYLON.Vector3(20, 20, 20);
-    model.position = new BABYLON.Vector3(20, 0, 0);
-  });
-
-  // MINI-MAP
-  const miniCam = new BABYLON.FreeCamera("MiniCam", new BABYLON.Vector3(0, 100, 0), scene);
-  miniCam.setTarget(BABYLON.Vector3.Zero());
-  miniCam.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-  miniCam.orthoLeft = -60;
-  miniCam.orthoRight = 60;
-  miniCam.orthoTop = 60;
-  miniCam.orthoBottom = -60;
-  miniCam.layerMask = 0x20000000;
-
-  // Hiển thị mini map trên GUI
-  const miniRTT = new BABYLON.RenderTargetTexture("minimap", 512, scene);
-  miniRTT.activeCamera = miniCam;
-  scene.customRenderTargets.push(miniRTT);
-
-  const guiTex = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-  const miniRect = new BABYLON.GUI.Rectangle();
-  miniRect.width = "200px";
-  miniRect.height = "200px";
-  miniRect.cornerRadius = 10;
-  miniRect.thickness = 1;
-  miniRect.background = "black";
-  miniRect.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-  miniRect.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-  guiTex.addControl(miniRect);
-
-  const miniImage = new BABYLON.GUI.Image("miniMapImage", "");
-  miniImage.source = miniRTT;
-  miniRect.addControl(miniImage);
-
-  return scene;
-};
-
-const scene = createScene();
-engine.runRenderLoop(() => scene.render());
-window.addEventListener("resize", () => engine.resize());
-</script>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        // Get the canvas element
+        const canvas = document.getElementById("renderCanvas");
+        
+        // Initialize Babylon.js engine
+        const engine = new BABYLON.Engine(canvas, true);
+        
+        // Create the scene
+        const createScene = () => {
+            const scene = new BABYLON.Scene(engine);
+            
+            // Add a camera
+            const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 10, -20), scene);
+            camera.setTarget(BABYLON.Vector3.Zero());
+            camera.attachControl(canvas, true);
+            
+            // Add a hemispheric light
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            light.intensity = 0.7;
+            
+            // Create the street (ground)
+            const street = BABYLON.MeshBuilder.CreateGround("street", { width: 20, height: 50 }, scene);
+            const streetMaterial = new BABYLON.StandardMaterial("streetMat", scene);
+            streetMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Gray color for the street
+            street.material = streetMaterial;
+            
+            // Create food stalls (simple boxes)
+            const stall1 = BABYLON.MeshBuilder.CreateBox("stall1", { size: 4 }, scene);
+            stall1.position = new BABYLON.Vector3(-6, 2, 0);
+            const stall1Material = new BABYLON.StandardMaterial("stall1Mat", scene);
+            stall1Material.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red stall (e.g., burger stand)
+            stall1.material = stall1Material;
+            
+            const stall2 = BABYLON.MeshBuilder.CreateBox("stall2", { size: 4 }, scene);
+            stall2.position = new BABYLON.Vector3(0, 2, 10);
+            const stall2Material = new BABYLON.StandardMaterial("stall2Mat", scene);
+            stall2Material.diffuseColor = new BABYLON.Color3(0, 1, 0); // Green stall (e.g., salad stand)
+            stall2.material = stall2Material;
+            
+            const stall3 = BABYLON.MeshBuilder.CreateBox("stall3", { size: 4 }, scene);
+            stall3.position = new BABYLON.Vector3(6, 2, 20);
+            const stall3Material = new BABYLON.StandardMaterial("stall3Mat", scene);
+            stall3Material.diffuseColor = new BABYLON.Color3(1, 1, 0); // Yellow stall (e.g., taco stand)
+            stall3.material = stall3Material;
+            
+            return scene;
+        };
+        
+        // Create and render the scene
+        const scene = createScene();
+        engine.runRenderLoop(() => {
+            scene.render();
+        });
+        
+        // Handle window resize
+        window.addEventListener("resize", () => {
+            engine.resize();
+        });
+    </script>
 </body>
 </html>
