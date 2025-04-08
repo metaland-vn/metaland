@@ -1,97 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Babylon.js Food Street with Beautiful Sky</title>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-        #renderCanvas {
-            width: 100%;
-            height: 100%;
-        }
-    </style>
-    <!-- Load Babylon.js from CDN -->
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <meta charset="utf-8" />
+  <title>Phố đơn giản - Babylon.js</title>
+  <style>
+    html, body { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; }
+    canvas { width: 100%; height: 100%; display: block; }
+  </style>
 </head>
 <body>
-    <canvas id="renderCanvas"></canvas>
-    <script>
-        // Get the canvas element
-        const canvas = document.getElementById("renderCanvas");
-        
-        // Initialize Babylon.js engine
-        const engine = new BABYLON.Engine(canvas, true);
-        
-        // Create the scene
-        const createScene = () => {
-            const scene = new BABYLON.Scene(engine);
-            
-            // Add a camera
-            const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 10, -20), scene);
-            camera.setTarget(BABYLON.Vector3.Zero());
-            camera.attachControl(canvas, true);
-            
-            // Add a hemispheric light
-            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-            light.intensity = 0.7;
-            
-            // Create the street (ground)
-            const street = BABYLON.MeshBuilder.CreateGround("street", { width: 20, height: 50 }, scene);
-            const streetMaterial = new BABYLON.StandardMaterial("streetMat", scene);
-            streetMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Gray color for the street
-            street.material = streetMaterial;
-            
-            // Create food stalls (simple boxes)
-            const stall1 = BABYLON.MeshBuilder.CreateBox("stall1", { size: 4 }, scene);
-            stall1.position = new BABYLON.Vector3(-6, 2, 0);
-            const stall1Material = new BABYLON.StandardMaterial("stall1Mat", scene);
-            stall1Material.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red stall
-            stall1.material = stall1rothMaterial;
-            
-            const stall2 = BABYLON.MeshBuilder.CreateBox("stall2", { size: 4 }, scene);
-            stall2.position = new BABYLON.Vector3(0, 2, 10);
-            const stall2Material = new BABYLON.StandardMaterial("stall2Mat", scene);
-            stall2Material.diffuseColor = new BABYLON.Color3(0, 1, 0); // Green stall
-            stall2.material = stall2Material;
-            
-            const stall3 = BABYLON.MeshBuilder.CreateBox("stall3", { size: 4 }, scene);
-            stall3.position = new BABYLON.Vector3(6, 2, 20);
-            const stall3Material = new BABYLON.StandardMaterial("stall3Mat", scene);
-            stall3Material.diffuseColor = new BABYLON.Color3(1, 1, 0); // Yellow stall
-            stall3.material = stall3Material;
+  <canvas id="renderCanvas"></canvas>
 
-            // Add a beautiful skybox
-            const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
-            const skyboxMaterial = new BABYLON.StandardMaterial("skyBoxMat", scene);
-            skyboxMaterial.backFaceCulling = false;
-            skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(
-                "https://assets.babylonjs.com/environments/skybox", // Free skybox texture from Babylon.js CDN
-                scene
-            );
-            skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-            skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-            skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-            skybox.material = skyboxMaterial;
-            
-            return scene;
-        };
-        
-        // Create and render the scene
-        const scene = createScene();
-        engine.runRenderLoop(() => {
-            scene.render();
-        });
-        
-        // Handle window resize
-        window.addEventListener("resize", () => {
-            engine.resize();
-        });
-    </script>
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+
+  <script>
+    const canvas = document.getElementById("renderCanvas");
+    const engine = new BABYLON.Engine(canvas, true);
+
+    const createScene = () => {
+      const scene = new BABYLON.Scene(engine);
+
+      // Camera & light
+      const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI/2, Math.PI/3, 50, new BABYLON.Vector3(0, 0, 0), scene);
+      camera.attachControl(canvas, true);
+      const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+
+      // Sky
+      const skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
+      const skyMaterial = new BABYLON.SkyMaterial("skyMaterial", scene);
+      skyMaterial.backFaceCulling = false;
+      skyMaterial.inclination = 0.49; // gần buổi trưa
+      skybox.material = skyMaterial;
+
+      // Mặt đất
+      const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 50, height: 100 }, scene);
+      const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
+      groundMat.diffuseColor = new BABYLON.Color3(0.6, 0.6, 0.6);
+      ground.material = groundMat;
+
+      // Đường chính
+      const road = BABYLON.MeshBuilder.CreateBox("road", { width: 10, height: 0.1, depth: 100 }, scene);
+      road.position.y = 0.05;
+      const roadMat = new BABYLON.StandardMaterial("roadMat", scene);
+      roadMat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2); // Màu xám đậm
+      road.material = roadMat;
+
+      // Vỉa hè trái
+      const sidewalkLeft = BABYLON.MeshBuilder.CreateBox("sidewalkLeft", { width: 5, height: 0.1, depth: 100 }, scene);
+      sidewalkLeft.position.x = -7.5;
+      sidewalkLeft.position.y = 0.05;
+      const sidewalkMat = new BABYLON.StandardMaterial("sidewalkMat", scene);
+      sidewalkMat.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+      sidewalkLeft.material = sidewalkMat;
+
+      // Vỉa hè phải
+      const sidewalkRight = sidewalkLeft.clone("sidewalkRight");
+      sidewalkRight.position.x = 7.5;
+
+      return scene;
+    };
+
+    const scene = createScene();
+    engine.runRenderLoop(() => scene.render());
+    window.addEventListener("resize", () => engine.resize());
+  </script>
 </body>
 </html>
