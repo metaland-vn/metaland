@@ -98,6 +98,41 @@ BABYLON.SceneLoader.ImportMesh("", "models/", "restaurant.glb", scene, function 
   model.position = new BABYLON.Vector3(10, 0, 10);
   model.scaling = new BABYLON.Vector3(2, 2, 2); // Tùy chỉnh tỉ lệ
 });
+  // Mini-map camera
+const miniCam = new BABYLON.FreeCamera("MiniCam", new BABYLON.Vector3(0, 100, 0), scene);
+miniCam.setTarget(BABYLON.Vector3.Zero());
+miniCam.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+miniCam.orthoLeft = -60;
+miniCam.orthoRight = 60;
+miniCam.orthoTop = 60;
+miniCam.orthoBottom = -60;
+miniCam.layerMask = 0x20000000;
+
+// Render texture
+const miniMapTexture = new BABYLON.RenderTargetTexture("minimap", 512, scene, false);
+miniMapTexture.activeCamera = miniCam;
+scene.customRenderTargets.push(miniMapTexture);
+
+// Tạo viewport nhỏ
+const plane = BABYLON.MeshBuilder.CreatePlane("minimapDisplay", {size: 0.3}, scene);
+plane.scaling.set(200, 200, 1);
+plane.position.set(80, 80, -200); // Đặt ra khỏi tầm nhìn chính
+const miniMat = new BABYLON.StandardMaterial("miniMapMat", scene);
+miniMat.diffuseTexture = miniMapTexture;
+miniMat.emissiveColor = BABYLON.Color3.White();
+plane.material = miniMat;
+plane.isPickable = false;
+
+// GUI layer hiển thị trong góc phải
+const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+const image = new BABYLON.GUI.Image("miniMapImage", "");
+image.source = miniMapTexture.renderList ? miniMapTexture.renderList[0] : null;
+image.width = "200px";
+image.height = "200px";
+image.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+image.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+advancedTexture.addControl(image);
+
   return scene;
 };
 
