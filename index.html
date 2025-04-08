@@ -1,140 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avatar & CLO-Set Embed</title>
-    <style>
-        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
-        #canvas-container { width: 100vw; height: 100vh; }
-        #design-list { 
-            position: fixed; 
-            bottom: 10px; 
-            left: 50%; 
-            transform: translateX(-50%);
-            background: white;
-            padding: 10px;
-            display: flex;
-            gap: 10px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            z-index: 10;
-        }
-        .design-item { 
-            cursor: pointer; 
-            padding: 10px; 
-            background: #f0f0f0; 
-            border-radius: 5px;
-        }
-        #clo-frame-container { 
-            display: none;
-            position: fixed;
-            top: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            height: 600px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            z-index: 20;
-        }
-        #clo-frame { width: 100%; height: 100%; border: none; }
-        .close-btn { 
-            position: absolute; 
-            top: 10px; 
-            right: 10px; 
-            background: red; 
-            color: white; 
-            border: none; 
-            padding: 5px 10px; 
-            cursor: pointer; 
-            border-radius: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div id="canvas-container"></div>
+import * as BABYLON from "@babylonjs/core";
+import "@babylonjs/loaders";
+import { ArcRotateCamera, HemisphericLight, MeshBuilder, Vector3, Color3, StandardMaterial } from "@babylonjs/core";
 
-    <!-- Danh sách thiết kế -->
-    <div id="design-list">
-        <div class="design-item" data-id="182308771691441593a4d75ea7ce3371">Thiết kế 1</div>
-        <div class="design-item" data-id="another_design_id">Thiết kế 2</div>
-    </div>
+const canvas = document.getElementById("renderCanvas");
+const engine = new BABYLON.Engine(canvas, true);
+const scene = new BABYLON.Scene(engine);
 
-    <!-- Iframe hiển thị CLO-Set -->
-    <div id="clo-frame-container">
-        <button class="close-btn" onclick="closeCloFrame()">X</button>
-        <iframe id="clo-frame"></iframe>
-    </div>
+// Camera
+const camera = new ArcRotateCamera("camera", Math.PI / 2, Math.PI / 3, 60, new Vector3(0, 0, 0), scene);
+camera.attachControl(canvas, true);
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
-    <script>
-        let scene, camera, renderer, avatar, loader;
+// Ánh sáng
+const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
 
-        function init() {
-            const container = document.getElementById("canvas-container");
+// Vật liệu
+const roadMat = new StandardMaterial("roadMat", scene);
+roadMat.diffuseColor = new Color3(0.1, 0.1, 0.1);
 
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-            camera.position.set(0, 1.5, 3);
+const sidewalkMat = new StandardMaterial("sidewalkMat", scene);
+sidewalkMat.diffuseColor = new Color3(0.6, 0.6, 0.6);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            container.appendChild(renderer.domElement);
+const buildingMat = new StandardMaterial("buildingMat", scene);
+buildingMat.diffuseColor = new Color3(0.7, 0.2, 0.2);
 
-            loader = new THREE.GLTFLoader();
-            loadAvatar();
+// Tạo 3 con đường song song
+const roadWidth = 4;
+const roadLength = 100;
+const spacing = 8; // Khoảng cách giữa các đường
 
-            window.addEventListener("resize", onWindowResize);
-            animate();
-        }
+for (let i = 0; i < 3; i++) {
+  const x = (i - 1) * spacing;
 
-        function loadAvatar() {
-            loader.load("avatar.glb", (gltf) => {
-                avatar = gltf.scene;
-                scene.add(avatar);
-            });
-        }
+  const road = MeshBuilder.CreateBox("road" + i, {
+    width: roadWidth,
+    height: 0.1,
+    depth: roadLength,
+  }, scene);
+  road.position.x = x;
+  road.material = roadMat;
 
-        document.querySelectorAll(".design-item").forEach(item => {
-            item.addEventListener("click", (event) => {
-                let designId = event.target.getAttribute("data-id");
-                openCloFrame(designId);
-            });
-        });
+  // Vỉa hè hai bên
+  for (let side = -1; side <= 1; side += 2) {
+    const sidewalk = MeshBuilder.CreateBox("sidewalk" + i + "_" + side, {
+      width: 1.5,
+      height: 0.1,
+      depth: roadLength,
+    }, scene);
+    sidewalk.position.x = x + side * (roadWidth / 2 + 0.75);
+    sidewalk.position.y = 0.05;
+    sidewalk.material = sidewalkMat;
 
-        function openCloFrame(designId) {
-            let cloFrame = document.getElementById("clo-frame");
-            cloFrame.src = `https://style.clo-set.com/embed/${designId}/1/c/0?colorway=0`;
-            document.getElementById("clo-frame-container").style.display = "block";
-        }
+    // Cây/cột đèn đơn giản
+    for (let z = -45; z <= 45; z += 15) {
+      const tree = MeshBuilder.CreateCylinder("tree" + i + "_" + z, {
+        diameter: 0.5,
+        height: 3,
+      }, scene);
+      tree.position.x = sidewalk.position.x;
+      tree.position.y = 1.5;
+      tree.position.z = z;
+    }
+  }
+}
 
-        function closeCloFrame() {
-            document.getElementById("clo-frame-container").style.display = "none";
-        }
+// Chạy render loop
+engine.runRenderLoop(() => {
+  scene.render();
+});
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-
-        init();
-    </script>
-</body>
-</html>
-
-
-
-
-
-
-
-
+window.addEventListener("resize", function () {
+  engine.resize();
+});
