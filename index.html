@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Babylon.js Food Street</title>
+    <title>Babylon.js Food Street with Beautiful Sky</title>
     <style>
         html, body {
             margin: 0;
@@ -51,20 +51,33 @@
             const stall1 = BABYLON.MeshBuilder.CreateBox("stall1", { size: 4 }, scene);
             stall1.position = new BABYLON.Vector3(-6, 2, 0);
             const stall1Material = new BABYLON.StandardMaterial("stall1Mat", scene);
-            stall1Material.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red stall (e.g., burger stand)
-            stall1.material = stall1Material;
+            stall1Material.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red stall
+            stall1.material = stall1rothMaterial;
             
             const stall2 = BABYLON.MeshBuilder.CreateBox("stall2", { size: 4 }, scene);
             stall2.position = new BABYLON.Vector3(0, 2, 10);
             const stall2Material = new BABYLON.StandardMaterial("stall2Mat", scene);
-            stall2Material.diffuseColor = new BABYLON.Color3(0, 1, 0); // Green stall (e.g., salad stand)
+            stall2Material.diffuseColor = new BABYLON.Color3(0, 1, 0); // Green stall
             stall2.material = stall2Material;
             
             const stall3 = BABYLON.MeshBuilder.CreateBox("stall3", { size: 4 }, scene);
             stall3.position = new BABYLON.Vector3(6, 2, 20);
             const stall3Material = new BABYLON.StandardMaterial("stall3Mat", scene);
-            stall3Material.diffuseColor = new BABYLON.Color3(1, 1, 0); // Yellow stall (e.g., taco stand)
+            stall3Material.diffuseColor = new BABYLON.Color3(1, 1, 0); // Yellow stall
             stall3.material = stall3Material;
+
+            // Add a beautiful skybox
+            const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
+            const skyboxMaterial = new BABYLON.StandardMaterial("skyBoxMat", scene);
+            skyboxMaterial.backFaceCulling = false;
+            skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(
+                "https://assets.babylonjs.com/environments/skybox", // Free skybox texture from Babylon.js CDN
+                scene
+            );
+            skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+            skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+            skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+            skybox.material = skyboxMaterial;
             
             return scene;
         };
