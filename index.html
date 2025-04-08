@@ -1,68 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Đường phố có vỉa hè, đèn & cây xanh</title>
+  <meta charset="UTF-8">
+  <title>Đường và vỉa hè Babylon.js</title>
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
   <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+  <style>
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    canvas { width: 100%; height: 100%; display: block; }
+  </style>
 </head>
 <body>
-<canvas id="renderCanvas" style="width: 100%; height: 100vh;"></canvas>
-<script>
-const canvas = document.getElementById("renderCanvas");
-const engine = new BABYLON.Engine(canvas, true);
+  <canvas id="renderCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById("renderCanvas");
+    const engine = new BABYLON.Engine(canvas, true);
+    
+    const createScene = () => {
+      const scene = new BABYLON.Scene(engine);
+      const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 4, 20, BABYLON.Vector3.Zero(), scene);
+      camera.attachControl(canvas, true);
+      const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
 
-const createScene = async () => {
-  const scene = new BABYLON.Scene(engine);
-  const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 10, -30), scene);
-  camera.setTarget(new BABYLON.Vector3(0, 0, 0));
-  camera.attachControl(canvas, true);
-  
-  const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+      // Vật liệu cho đường và vỉa hè
+      const roadMat = new BABYLON.StandardMaterial("roadMat", scene);
+      roadMat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1); // Màu đen xám
 
-  // Mặt đường và vỉa hè
-  const road = BABYLON.MeshBuilder.CreateBox("road", { width: 6, height: 0.1, depth: 50 }, scene);
-  road.material = new BABYLON.StandardMaterial("roadMat", scene);
-  road.material.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+      const sidewalkMat = new BABYLON.StandardMaterial("sidewalkMat", scene);
+      sidewalkMat.diffuseColor = new BABYLON.Color3(0.7, 0.7, 0.7); // Màu xám sáng
 
-  const pavementLeft = BABYLON.MeshBuilder.CreateBox("pavementLeft", { width: 2, height: 0.2, depth: 50 }, scene);
-  pavementLeft.position.x = -4;
-  pavementLeft.position.y = 0.05;
-  pavementLeft.material = new BABYLON.StandardMaterial("pavementMat", scene);
-  pavementLeft.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+      // Tạo mặt đường (giữa)
+      const road = BABYLON.MeshBuilder.CreateBox("road", {
+        width: 6,
+        height: 0.1,
+        depth: 30
+      }, scene);
+      road.position.y = 0.05;
+      road.material = roadMat;
 
-  const pavementRight = pavementLeft.clone("pavementRight");
-  pavementRight.position.x = 4;
+      // Vỉa hè trái
+      const sidewalkLeft = BABYLON.MeshBuilder.CreateBox("sidewalkLeft", {
+        width: 2,
+        height: 0.2,
+        depth: 30
+      }, scene);
+      sidewalkLeft.position.x = -4;
+      sidewalkLeft.position.y = 0.1;
+      sidewalkLeft.material = sidewalkMat;
 
-  // Load mô hình đèn đường và cây xanh
-  const streetlightModel = await BABYLON.SceneLoader.ImportMeshAsync("", "./", "streetlight.glb", scene);
-  const treeModel = await BABYLON.SceneLoader.ImportMeshAsync("", "./", "tree.glb", scene);
+      // Vỉa hè phải
+      const sidewalkRight = BABYLON.MeshBuilder.CreateBox("sidewalkRight", {
+        width: 2,
+        height: 0.2,
+        depth: 30
+      }, scene);
+      sidewalkRight.position.x = 4;
+      sidewalkRight.position.y = 0.1;
+      sidewalkRight.material = sidewalkMat;
 
-  const streetlight = streetlightModel.meshes[0];
-  const tree = treeModel.meshes[0];
+      return scene;
+    };
 
-  streetlight.setEnabled(false);
-  tree.setEnabled(false);
-
-  // Nhân bản đèn đường và cây dọc vỉa hè
-  for (let i = -20; i <= 20; i += 10) {
-    const lightClone = streetlight.clone("light" + i);
-    lightClone.position = new BABYLON.Vector3(-4, 0, i);
-    lightClone.setEnabled(true);
-
-    const treeClone = tree.clone("tree" + i);
-    treeClone.position = new BABYLON.Vector3(4, 0, i + 5);
-    treeClone.setEnabled(true);
-  }
-
-  return scene;
-};
-
-createScene().then(scene => {
-  engine.runRenderLoop(() => scene.render());
-});
-
-window.addEventListener("resize", () => engine.resize());
-</script>
-</body>
-</html>
-
+    const scene = createScene();
+    engine.runRenderLoop(() => scene.render
