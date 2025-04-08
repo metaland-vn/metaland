@@ -2,9 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Thành phố nhỏ - Babylon.js</title>
+  <title>Thành phố nhỏ với mô hình GLB và bản đồ mini</title>
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
-  <style> html, body { margin: 0; height: 100%; } canvas { width: 100%; height: 100%; } </style>
+  <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+    canvas { width: 100%; height: 100%; display: block; }
+  </style>
 </head>
 <body>
 <canvas id="renderCanvas"></canvas>
@@ -14,11 +18,15 @@ const engine = new BABYLON.Engine(canvas, true);
 
 const createScene = () => {
   const scene = new BABYLON.Scene(engine);
+
+  // Main camera
   const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2.2, Math.PI / 3, 100, new BABYLON.Vector3(0, 0, 0), scene);
   camera.attachControl(canvas, true);
+
+  // Light
   const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
 
-  // Vật liệu
+  // Materials
   const roadMat = new BABYLON.StandardMaterial("roadMat", scene);
   roadMat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1);
 
@@ -31,27 +39,21 @@ const createScene = () => {
     return mat;
   });
 
-  // Hàm tạo block: nhà hoặc công viên
+  // Tạo block
   function createBlock(x, z, type) {
     if (type === "building") {
       const h = Math.random() * 10 + 5;
       const b = BABYLON.MeshBuilder.CreateBox("building", { width: 16, depth: 16, height: h }, scene);
       b.position.set(x, h / 2, z);
       b.material = buildingMats[Math.floor(Math.random() * buildingMats.length)];
-      b.actionManager = new BABYLON.ActionManager(scene);
-      b.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-        alert("Bạn đã click vào tòa nhà!");
-      }));
     } else if (type === "park") {
       const ground = BABYLON.MeshBuilder.CreateGround("park", { width: 16, height: 16 }, scene);
       ground.position.set(x, 0, z);
       ground.material = grassMat;
 
-      // Thêm vài cây đơn giản
       for (let i = 0; i < 5; i++) {
         const tx = x + Math.random() * 12 - 6;
         const tz = z + Math.random() * 12 - 6;
-
         const trunk = BABYLON.MeshBuilder.CreateCylinder("trunk", { height: 1, diameter: 0.5 }, scene);
         trunk.position.set(tx, 0.5, tz);
         const leaves = BABYLON.MeshBuilder.CreateSphere("leaves", { diameter: 2 }, scene);
@@ -63,14 +65,14 @@ const createScene = () => {
     }
   }
 
-  // Hàm tạo đường
+  // Tạo đường
   function createRoad(x, z, width, depth) {
     const road = BABYLON.MeshBuilder.CreateBox("road", { width: width, height: 0.1, depth: depth }, scene);
     road.position.set(x, 0.05, z);
     road.material = roadMat;
   }
 
-  // Tạo lưới 3x3 block thành phố
+  // Thành phố 3x3 block
   const blockSize = 20;
   const roadWidth = 6;
   const total = 3;
@@ -84,54 +86,50 @@ const createScene = () => {
     }
   }
 
-  // Tạo đường ngang & dọc
+  // Đường ngang & dọc
   for (let i = -1; i <= 1; i++) {
     for (let j = -2; j <= 2; j++) {
-      // Đường dọc
       createRoad(i * (blockSize + roadWidth), j * (blockSize / 2 + roadWidth), roadWidth, blockSize);
-      // Đường ngang
       createRoad(j * (blockSize / 2 + roadWidth), i * (blockSize + roadWidth), blockSize, roadWidth);
     }
   }
-BABYLON.SceneLoader.ImportMesh("", "models/", "restaurant.glb", scene, function (meshes) {
-  const model = meshes[0];
-  model.position = new BABYLON.Vector3(10, 0, 10);
-  model.scaling = new BABYLON.Vector3(2, 2, 2); // Tùy chỉnh tỉ lệ
-});
-  // Mini-map camera
-const miniCam = new BABYLON.FreeCamera("MiniCam", new BABYLON.Vector3(0, 100, 0), scene);
-miniCam.setTarget(BABYLON.Vector3.Zero());
-miniCam.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-miniCam.orthoLeft = -60;
-miniCam.orthoRight = 60;
-miniCam.orthoTop = 60;
-miniCam.orthoBottom = -60;
-miniCam.layerMask = 0x20000000;
 
-// Render texture
-const miniMapTexture = new BABYLON.RenderTargetTexture("minimap", 512, scene, false);
-miniMapTexture.activeCamera = miniCam;
-scene.customRenderTargets.push(miniMapTexture);
+  // Tải mô hình GLB (ví dụ: nhà hàng)
+  BABYLON.SceneLoader.ImportMesh("", "https://models.babylonjs.com/", "BoomBox.glb", scene, function (meshes) {
+    const model = meshes[0];
+    model.scaling = new BABYLON.Vector3(20, 20, 20);
+    model.position = new BABYLON.Vector3(20, 0, 0);
+  });
 
-// Tạo viewport nhỏ
-const plane = BABYLON.MeshBuilder.CreatePlane("minimapDisplay", {size: 0.3}, scene);
-plane.scaling.set(200, 200, 1);
-plane.position.set(80, 80, -200); // Đặt ra khỏi tầm nhìn chính
-const miniMat = new BABYLON.StandardMaterial("miniMapMat", scene);
-miniMat.diffuseTexture = miniMapTexture;
-miniMat.emissiveColor = BABYLON.Color3.White();
-plane.material = miniMat;
-plane.isPickable = false;
+  // MINI-MAP
+  const miniCam = new BABYLON.FreeCamera("MiniCam", new BABYLON.Vector3(0, 100, 0), scene);
+  miniCam.setTarget(BABYLON.Vector3.Zero());
+  miniCam.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+  miniCam.orthoLeft = -60;
+  miniCam.orthoRight = 60;
+  miniCam.orthoTop = 60;
+  miniCam.orthoBottom = -60;
+  miniCam.layerMask = 0x20000000;
 
-// GUI layer hiển thị trong góc phải
-const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-const image = new BABYLON.GUI.Image("miniMapImage", "");
-image.source = miniMapTexture.renderList ? miniMapTexture.renderList[0] : null;
-image.width = "200px";
-image.height = "200px";
-image.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-image.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-advancedTexture.addControl(image);
+  // Hiển thị mini map trên GUI
+  const miniRTT = new BABYLON.RenderTargetTexture("minimap", 512, scene);
+  miniRTT.activeCamera = miniCam;
+  scene.customRenderTargets.push(miniRTT);
+
+  const guiTex = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+  const miniRect = new BABYLON.GUI.Rectangle();
+  miniRect.width = "200px";
+  miniRect.height = "200px";
+  miniRect.cornerRadius = 10;
+  miniRect.thickness = 1;
+  miniRect.background = "black";
+  miniRect.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+  miniRect.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+  guiTex.addControl(miniRect);
+
+  const miniImage = new BABYLON.GUI.Image("miniMapImage", "");
+  miniImage.source = miniRTT;
+  miniRect.addControl(miniImage);
 
   return scene;
 };
