@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Đường và vỉa hè Babylon.js</title>
+  <title>Con phố đơn giản với Babylon.js</title>
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
   <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
   <style>
@@ -15,48 +15,103 @@
   <script>
     const canvas = document.getElementById("renderCanvas");
     const engine = new BABYLON.Engine(canvas, true);
-    
+
     const createScene = () => {
       const scene = new BABYLON.Scene(engine);
-      const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 4, 20, BABYLON.Vector3.Zero(), scene);
+      const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2.2, Math.PI / 3, 50, BABYLON.Vector3.Zero(), scene);
       camera.attachControl(canvas, true);
       const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
 
-      // Vật liệu cho đường và vỉa hè
+      // Vật liệu
       const roadMat = new BABYLON.StandardMaterial("roadMat", scene);
-      roadMat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1); // Màu đen xám
+      roadMat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1);
 
       const sidewalkMat = new BABYLON.StandardMaterial("sidewalkMat", scene);
-      sidewalkMat.diffuseColor = new BABYLON.Color3(0.7, 0.7, 0.7); // Màu xám sáng
+      sidewalkMat.diffuseColor = new BABYLON.Color3(0.7, 0.7, 0.7);
 
-      // Tạo mặt đường (giữa)
+      const buildingMat = new BABYLON.StandardMaterial("buildingMat", scene);
+      buildingMat.diffuseColor = new BABYLON.Color3(0.9, 0.6, 0.5);
+
+      const treeTrunkMat = new BABYLON.StandardMaterial("treeTrunkMat", scene);
+      treeTrunkMat.diffuseColor = new BABYLON.Color3(0.4, 0.2, 0);
+
+      const treeLeavesMat = new BABYLON.StandardMaterial("treeLeavesMat", scene);
+      treeLeavesMat.diffuseColor = new BABYLON.Color3(0.1, 0.6, 0.2);
+
+      // Đường
       const road = BABYLON.MeshBuilder.CreateBox("road", {
         width: 6,
         height: 0.1,
-        depth: 30
+        depth: 60
       }, scene);
       road.position.y = 0.05;
       road.material = roadMat;
 
-      // Vỉa hè trái
-      const sidewalkLeft = BABYLON.MeshBuilder.CreateBox("sidewalkLeft", {
-        width: 2,
-        height: 0.2,
-        depth: 30
-      }, scene);
-      sidewalkLeft.position.x = -4;
-      sidewalkLeft.position.y = 0.1;
-      sidewalkLeft.material = sidewalkMat;
+      // Vỉa hè
+      const createSidewalk = (x) => {
+        const sidewalk = BABYLON.MeshBuilder.CreateBox("sidewalk", {
+          width: 2,
+          height: 0.2,
+          depth: 60
+        }, scene);
+        sidewalk.position.x = x;
+        sidewalk.position.y = 0.1;
+        sidewalk.material = sidewalkMat;
+      };
+      createSidewalk(-4);
+      createSidewalk(4);
 
-      // Vỉa hè phải
-      const sidewalkRight = BABYLON.MeshBuilder.CreateBox("sidewalkRight", {
-        width: 2,
-        height: 0.2,
-        depth: 30
-      }, scene);
-      sidewalkRight.position.x = 4;
-      sidewalkRight.position.y = 0.1;
-      sidewalkRight.material = sidewalkMat;
+      // Nhà
+      const createBuilding = (x, z) => {
+        const building = BABYLON.MeshBuilder.CreateBox("building", {
+          width: 3,
+          height: Math.random() * 4 + 3,
+          depth: 3
+        }, scene);
+        building.position.set(x, building.scaling.y / 2 + 0.1, z);
+        building.material = buildingMat;
+      };
+
+      for (let z = -25; z <= 25; z += 10) {
+        createBuilding(-6, z); // Bên trái
+        createBuilding(6, z);  // Bên phải
+      }
+
+      // Cây xanh
+      const createTree = (x, z) => {
+        const trunk = BABYLON.MeshBuilder.CreateCylinder("trunk", {
+          diameter: 0.5,
+          height: 1
+        }, scene);
+        trunk.position.set(x, 0.5, z);
+        trunk.material = treeTrunkMat;
+
+        const leaves = BABYLON.MeshBuilder.CreateSphere("leaves", {
+          diameter: 2
+        }, scene);
+        leaves.position.set(x, 2, z);
+        leaves.material = treeLeavesMat;
+      };
+
+      for (let z = -20; z <= 20; z += 10) {
+        createTree(-3.5, z);
+        createTree(3.5, z);
+      }
+
+      // Cột đèn
+      const createLampPost = (x, z) => {
+        const pole = BABYLON.MeshBuilder.CreateCylinder("pole", { diameter: 0.2, height: 3 }, scene);
+        pole.position.set(x, 1.5, z);
+        const bulb = BABYLON.MeshBuilder.CreateSphere("bulb", { diameter: 0.4 }, scene);
+        bulb.position.set(x, 3.2, z);
+        bulb.material = new BABYLON.StandardMaterial("bulbMat", scene);
+        bulb.material.emissiveColor = new BABYLON.Color3(1, 1, 0.6);
+      };
+
+      for (let z = -25; z <= 25; z += 15) {
+        createLampPost(-2.5, z);
+        createLampPost(2.5, z);
+      }
 
       return scene;
     };
