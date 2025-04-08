@@ -93,7 +93,11 @@ const createScene = () => {
       createRoad(j * (blockSize / 2 + roadWidth), i * (blockSize + roadWidth), blockSize, roadWidth);
     }
   }
-
+BABYLON.SceneLoader.ImportMesh("", "models/", "restaurant.glb", scene, function (meshes) {
+  const model = meshes[0];
+  model.position = new BABYLON.Vector3(10, 0, 10);
+  model.scaling = new BABYLON.Vector3(2, 2, 2); // Tùy chỉnh tỉ lệ
+});
   return scene;
 };
 
